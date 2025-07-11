@@ -1798,7 +1798,8 @@
             projectId: "admin-webveda",
             storageBucket: "admin-webveda.firebasestorage.app",
             messagingSenderId: "332739132811",
-            appId: "1:332739132811:web:6f5452e21df87db2c7838e
+            appId: "1:332739132811:web:6f5452e21df87db2c7838e"
+        };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
@@ -1866,6 +1867,8 @@
             const successMessage = document.getElementById('successMessage');
             const loginBtn = document.getElementById('loginBtn');
 
+            console.log('Login attempt for username:', username);
+
             // Hide previous messages
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
@@ -1910,6 +1913,7 @@
                 }
             } catch (error) {
                 console.error('Login error:', error);
+                console.log('Falling back to local authentication...');
                 
                 // Fallback to local authentication
                 const user = users.find(u => u.username === username && u.password === password);
