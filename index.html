@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebVeda Business Suite - Complete Business Management Solution</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <!-- Simple working version -->
     <style>
         * {
             margin: 0;
@@ -1033,10 +1030,10 @@
                                 <td>45</td>
                                 <td><span class="status-badge status-active">In Stock</span></td>
                                 <td>
-                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editProduct(${product.id})">
+                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editProduct(1)">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteProduct(${product.id})">
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteProduct(1)">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -1049,10 +1046,10 @@
                                 <td>12</td>
                                 <td><span class="status-badge status-pending">Low Stock</span></td>
                                 <td>
-                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editProduct(${product.id})">
+                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editProduct(2)">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteProduct(${product.id})">
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteProduct(2)">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -1065,10 +1062,10 @@
                                 <td>0</td>
                                 <td><span class="status-badge status-inactive">Out of Stock</span></td>
                                 <td>
-                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editProduct(${product.id})">
+                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editProduct(3)">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteProduct(${product.id})">
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteProduct(3)">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -1791,939 +1788,340 @@
 </div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDp5FYfSPFgQKoIjbREjN5qtKt4cennknA",
-            authDomain: "admin-webveda.firebaseapp.com",
-            projectId: "admin-webveda",
-            storageBucket: "admin-webveda.firebasestorage.app",
-            messagingSenderId: "332739132811",
-            appId: "1:332739132811:web:6f5452e21df87db2c7838e"
-        };
+        // Simple working configuration
+        // Global data storage
+        let customers = [
+            { id: 1, name: 'John Smith', email: 'john@example.com', phone: '+1 (555) 123-4567', company: 'Tech Solutions Inc.', status: 'Active', joinDate: '2024-01-01', totalSpent: 15420 },
+            { id: 2, name: 'Sarah Johnson', email: 'sarah@example.com', phone: '+1 (555) 987-6543', company: 'Digital Marketing Co.', status: 'Active', joinDate: '2024-01-05', totalSpent: 8900 },
+            { id: 3, name: 'Mike Wilson', email: 'mike@example.com', phone: '+1 (555) 456-7890', company: 'Startup Ventures', status: 'Pending', joinDate: '2024-01-10', totalSpent: 0 }
+        ];
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        let products = [
+            { id: 1, name: 'Laptop Pro X1', sku: 'LP-001', category: 'Electronics', price: 1299.00, quantity: 45, status: 'In Stock', supplier: 'TechCorp', reorderLevel: 10, cost: 950.00 },
+            { id: 2, name: 'Wireless Headphones', sku: 'WH-002', category: 'Electronics', price: 89.99, quantity: 12, status: 'Low Stock', supplier: 'AudioMax', reorderLevel: 15, cost: 65.00 },
+            { id: 3, name: 'Designer T-Shirt', sku: 'TS-003', category: 'Clothing', price: 29.99, quantity: 0, status: 'Out of Stock', supplier: 'FashionCo', reorderLevel: 20, cost: 18.00 }
+        ];
 
-        // Global data storage (will be replaced with Firebase data)
-        let customers = [];
-        let products = [];
-        let transactions = [];
-        let projects = [];
-        let orders = [];
-        let employees = [];
-        let suppliers = [];
-        let users = [];
+        let transactions = [
+            { id: 1, date: '2024-01-15', type: 'Income', category: 'Sales', description: 'Product sales', amount: 12450, balance: 89450, customerId: 1 },
+            { id: 2, date: '2024-01-14', type: 'Expense', category: 'Utilities', description: 'Electricity bill', amount: -2180, balance: 76970, customerId: null },
+            { id: 3, date: '2024-01-13', type: 'Income', category: 'Services', description: 'Consulting fee', amount: 8900, balance: 79150, customerId: 2 }
+        ];
 
-        // Firebase Database Functions
-        async function initializeFirebaseData() {
-            try {
-                // Load initial data from Firebase
-                await Promise.all([
-                    loadCustomersFromFirebase(),
-                    loadProductsFromFirebase(),
-                    loadTransactionsFromFirebase(),
-                    loadProjectsFromFirebase(),
-                    loadOrdersFromFirebase(),
-                    loadEmployeesFromFirebase(),
-                    loadSuppliersFromFirebase(),
-                    loadUsersFromFirebase()
-                ]);
+        let projects = [
+            { id: 1, name: 'Website Redesign', client: 'Tech Solutions Inc.', startDate: '2024-01-01', endDate: '2024-02-15', progress: 75, status: 'In Progress', budget: 15000, team: ['John Doe', 'Jane Smith'], priority: 'High' },
+            { id: 2, name: 'Mobile App Development', client: 'Startup Ventures', startDate: '2024-01-10', endDate: '2024-03-30', progress: 25, status: 'Planning', budget: 25000, team: ['Mike Johnson'], priority: 'Medium' },
+            { id: 3, name: 'E-commerce Platform', client: 'Digital Marketing Co.', startDate: '2023-12-01', endDate: '2024-01-31', progress: 100, status: 'Completed', budget: 30000, team: ['Sarah Wilson', 'Tom Brown'], priority: 'High' }
+        ];
+
+        let orders = [
+            { id: 1, customerId: 1, customerName: 'John Smith', date: '2024-01-15', total: 2598.00, status: 'Delivered', items: [
+                { productId: 1, name: 'Laptop Pro X1', quantity: 2, price: 1299.00 }
+            ]},
+            { id: 2, customerId: 2, customerName: 'Sarah Johnson', date: '2024-01-14', total: 89.99, status: 'Shipped', items: [
+                { productId: 2, name: 'Wireless Headphones', quantity: 1, price: 89.99 }
+            ]},
+            { id: 3, customerId: 1, customerName: 'John Smith', date: '2024-01-13', total: 29.99, status: 'Pending', items: [
+                { productId: 3, name: 'Designer T-Shirt', quantity: 1, price: 29.99 }
+            ]}
+        ];
+
+        let employees = [
+            { id: 1, name: 'John Doe', email: 'john.doe@webveda.com', position: 'Senior Developer', department: 'IT', salary: 75000, joinDate: '2023-01-15', status: 'Active' },
+            { id: 2, name: 'Jane Smith', email: 'jane.smith@webveda.com', position: 'Project Manager', department: 'Management', salary: 65000, joinDate: '2023-03-20', status: 'Active' },
+            { id: 3, name: 'Mike Johnson', email: 'mike.johnson@webveda.com', position: 'UI/UX Designer', department: 'Design', salary: 60000, joinDate: '2023-06-10', status: 'Active' }
+        ];
+
+        let suppliers = [
+            { id: 1, name: 'TechCorp', email: 'contact@techcorp.com', phone: '+1 (555) 111-1111', category: 'Electronics', rating: 4.5, totalOrders: 25 },
+            { id: 2, name: 'AudioMax', email: 'sales@audiomax.com', phone: '+1 (555) 222-2222', category: 'Audio Equipment', rating: 4.2, totalOrders: 18 },
+            { id: 3, name: 'FashionCo', email: 'orders@fashionco.com', phone: '+1 (555) 333-3333', category: 'Clothing', rating: 4.0, totalOrders: 12 }
+        ];
+
+        let users = [
+            { username: 'gitz.tech', password: 'Gitez.Maha@Ubi9186', role: 'admin', name: 'Admin User', email: 'admin@webveda.com' }
+        ];
+
+        // Simple login function
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            const loginBtn = document.getElementById('loginBtn');
+
+            // Hide previous messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+
+            // Find user in users array
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                // Show success message
+                successMessage.style.display = 'block';
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+
+                // Simulate login delay
+                setTimeout(() => {
+                    // Store login status and user info
+                    sessionStorage.setItem('webveda_logged_in', 'true');
+                    sessionStorage.setItem('webveda_username', username);
+                    sessionStorage.setItem('webveda_user_role', user.role);
+                    sessionStorage.setItem('webveda_user_name', user.name);
+                    
+                    // Show main content
+                    showMainContent();
+                    
+                    // Reset form
+                    document.getElementById('loginForm').reset();
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+                    successMessage.style.display = 'none';
+                }, 1500);
+            } else {
+                // Show error message
+                errorMessage.style.display = 'block';
                 
-                // Update UI after data is loaded
-                updateAllTables();
-                updateDashboardStats();
-                showNotification('Data loaded successfully!', 'success');
-            } catch (error) {
-                console.error('Error loading data:', error);
-                showNotification('Error loading data from database', 'error');
-            }
-        }
-
-        // Customer Firebase Functions
-        async function loadCustomersFromFirebase() {
-            try {
-                const snapshot = await db.collection('customers').get();
-                customers = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-            } catch (error) {
-                console.error('Error loading customers:', error);
-            }
-        }
-
-        async function addCustomerToFirebase(customerData) {
-            try {
-                const docRef = await db.collection('customers').add({
-                    ...customerData,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                return docRef.id;
-            } catch (error) {
-                console.error('Error adding customer:', error);
-                throw error;
-            }
-        }
-
-        async function updateCustomerInFirebase(id, customerData) {
-            try {
-                await db.collection('customers').doc(id).update({
-                    ...customerData,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (error) {
-                console.error('Error updating customer:', error);
-                throw error;
-            }
-        }
-
-        async function deleteCustomerFromFirebase(id) {
-            try {
-                await db.collection('customers').doc(id).delete();
-            } catch (error) {
-                console.error('Error deleting customer:', error);
-                throw error;
-            }
-        }
-
-        // Product Firebase Functions
-        async function loadProductsFromFirebase() {
-            try {
-                const snapshot = await db.collection('products').get();
-                products = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-            } catch (error) {
-                console.error('Error loading products:', error);
-            }
-        }
-
-        async function addProductToFirebase(productData) {
-            try {
-                const docRef = await db.collection('products').add({
-                    ...productData,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                return docRef.id;
-            } catch (error) {
-                console.error('Error adding product:', error);
-                throw error;
-            }
-        }
-
-        async function updateProductInFirebase(id, productData) {
-            try {
-                await db.collection('products').doc(id).update({
-                    ...productData,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (error) {
-                console.error('Error updating product:', error);
-                throw error;
-            }
-        }
-
-        async function deleteProductFromFirebase(id) {
-            try {
-                await db.collection('products').doc(id).delete();
-            } catch (error) {
-                console.error('Error deleting product:', error);
-                throw error;
-            }
-        }
-
-        // Transaction Firebase Functions
-        async function loadTransactionsFromFirebase() {
-            try {
-                const snapshot = await db.collection('transactions').orderBy('date', 'desc').get();
-                transactions = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-            } catch (error) {
-                console.error('Error loading transactions:', error);
-            }
-        }
-
-        async function addTransactionToFirebase(transactionData) {
-            try {
-                const docRef = await db.collection('transactions').add({
-                    ...transactionData,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                return docRef.id;
-            } catch (error) {
-                console.error('Error adding transaction:', error);
-                throw error;
-            }
-        }
-
-        // Project Firebase Functions
-        async function loadProjectsFromFirebase() {
-            try {
-                const snapshot = await db.collection('projects').get();
-                projects = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-            } catch (error) {
-                console.error('Error loading projects:', error);
-            }
-        }
-
-        async function addProjectToFirebase(projectData) {
-            try {
-                const docRef = await db.collection('projects').add({
-                    ...projectData,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                return docRef.id;
-            } catch (error) {
-                console.error('Error adding project:', error);
-                throw error;
-            }
-        }
-
-        // Order Firebase Functions
-        async function loadOrdersFromFirebase() {
-            try {
-                const snapshot = await db.collection('orders').orderBy('date', 'desc').get();
-                orders = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-            } catch (error) {
-                console.error('Error loading orders:', error);
-            }
-        }
-
-        async function addOrderToFirebase(orderData) {
-            try {
-                const docRef = await db.collection('orders').add({
-                    ...orderData,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                return docRef.id;
-            } catch (error) {
-                console.error('Error adding order:', error);
-                throw error;
-            }
-        }
-
-        // Employee Firebase Functions
-        async function loadEmployeesFromFirebase() {
-            try {
-                const snapshot = await db.collection('employees').get();
-                employees = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-            } catch (error) {
-                console.error('Error loading employees:', error);
-            }
-        }
-
-        async function addEmployeeToFirebase(employeeData) {
-            try {
-                const docRef = await db.collection('employees').add({
-                    ...employeeData,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                return docRef.id;
-            } catch (error) {
-                console.error('Error adding employee:', error);
-                throw error;
-            }
-        }
-
-        // Supplier Firebase Functions
-        async function loadSuppliersFromFirebase() {
-            try {
-                const snapshot = await db.collection('suppliers').get();
-                suppliers = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-            } catch (error) {
-                console.error('Error loading suppliers:', error);
-            }
-        }
-
-        async function addSupplierToFirebase(supplierData) {
-            try {
-                const docRef = await db.collection('suppliers').add({
-                    ...supplierData,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                return docRef.id;
-            } catch (error) {
-                console.error('Error adding supplier:', error);
-                throw error;
-            }
-        }
-
-        // User Firebase Functions
-        async function loadUsersFromFirebase() {
-            try {
-                const snapshot = await db.collection('users').get();
-                users = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                // Clear password field
+                document.getElementById('password').value = '';
                 
-                // Add default admin user if no users exist
-                if (users.length === 0) {
-                    await addUserToFirebase({
-                        username: 'gitz.tech',
-                        password: 'Gitez.Maha@Ubi9186',
-                        role: 'admin',
-                        name: 'Admin User',
-                        email: 'admin@webveda.com'
-                    });
-                    users = [{
-                        username: 'gitz.tech',
-                        password: 'Gitez.Maha@Ubi9186',
-                        role: 'admin',
-                        name: 'Admin User',
-                        email: 'admin@webveda.com'
-                    }];
-                }
-            } catch (error) {
-                console.error('Error loading users:', error);
+                // Shake animation
+                const loginCard = document.querySelector('.login-card');
+                loginCard.style.animation = 'shake 0.5s ease-in-out';
+                setTimeout(() => {
+                    loginCard.style.animation = '';
+                }, 500);
             }
         }
 
-        async function addUserToFirebase(userData) {
-            try {
-                const docRef = await db.collection('users').add({
-                    ...userData,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                return docRef.id;
-            } catch (error) {
-                console.error('Error adding user:', error);
-                throw error;
-            }
-        }
+        // Simple add user function
+        function addUser() {
+            const name = document.getElementById('newUserName').value;
+            const email = document.getElementById('newUserEmail').value;
+            const username = document.getElementById('newUsername').value;
+            const password = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('newUserRole').value;
+            const errorMessage = document.getElementById('addUserErrorMessage');
+            const successMessage = document.getElementById('addUserSuccessMessage');
+            const addUserBtn = document.getElementById('addUserBtn');
 
-        // Update all tables function
-        function updateAllTables() {
-            updateCustomerTable();
-            updateProductTable();
-            updateTransactionTable();
-            updateProjectTable();
-            updateOrderTable();
-            updateEmployeeTable();
-            updateSupplierTable();
-            populateOrderDropdowns();
-        }
+            // Hide previous messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
 
-        // CRM Functions
-        async function addCustomer() {
-            const name = document.getElementById('customer-name').value;
-            const email = document.getElementById('customer-email').value;
-            const phone = document.getElementById('customer-phone').value;
-            const company = document.getElementById('customer-company').value;
-
-            if (!name || !email || !phone) {
-                alert('Please fill in all required fields');
+            // Validation
+            if (!name || !email || !username || !password || !confirmPassword || !role) {
+                errorMessage.textContent = 'Please fill in all fields.';
+                errorMessage.style.display = 'block';
                 return;
             }
 
-            const newCustomer = {
+            if (password !== confirmPassword) {
+                errorMessage.textContent = 'Passwords do not match.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorMessage.textContent = 'Password must be at least 6 characters long.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            // Check if username already exists
+            if (users.find(u => u.username === username)) {
+                errorMessage.textContent = 'Username already exists. Please choose a different username.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            // Check if email already exists
+            if (users.find(u => u.email === email)) {
+                errorMessage.textContent = 'Email already exists. Please use a different email.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            // Add new user
+            const newUser = {
+                username: username,
+                password: password,
+                role: role,
                 name: name,
-                email: email,
-                phone: phone,
-                company: company,
-                status: 'Active',
-                joinDate: new Date().toISOString().split('T')[0],
-                totalSpent: 0
+                email: email
             };
 
-            try {
-                await addCustomerToFirebase(newCustomer);
-                await loadCustomersFromFirebase();
-                updateCustomerTable();
-                clearCustomerForm();
-                showNotification('Customer added successfully!', 'success');
-            } catch (error) {
-                showNotification('Error adding customer to database', 'error');
-            }
+            users.push(newUser);
+
+            // Show success message
+            successMessage.style.display = 'block';
+            addUserBtn.disabled = true;
+            addUserBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding User...';
+
+            // Simulate delay
+            setTimeout(() => {
+                // Reset form
+                document.getElementById('addUserForm').reset();
+                addUserBtn.disabled = false;
+                addUserBtn.innerHTML = '<i class="fas fa-user-plus"></i> Add User';
+                successMessage.style.display = 'none';
+                
+                // Show main content
+                showMainLoginForm();
+                
+                // Show success notification
+                showNotification('User added successfully! You can now login with the new credentials.', 'success');
+            }, 1500);
         }
 
-        function updateCustomerTable() {
-            const tbody = document.querySelector('#crm .table tbody');
-            tbody.innerHTML = '';
+        // ... existing code ...
 
-            customers.forEach(customer => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${customer.name}</td>
-                    <td>${customer.email}</td>
-                    <td>${customer.phone}</td>
-                    <td>${customer.company}</td>
-                    <td><span class="status-badge status-${customer.status.toLowerCase()}">${customer.status}</span></td>
-                    <td>
-                        <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editCustomer(${customer.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteCustomer(${customer.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
+        // Navigation and UI functions
+        function showModule(moduleId) {
+            // Hide all modules
+            const modules = document.querySelectorAll('.module-section');
+            modules.forEach(module => {
+                module.classList.remove('active');
             });
+
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected module
+            document.getElementById(moduleId).classList.add('active');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
         }
 
-        function deleteCustomer(id) {
-            if (confirm('Are you sure you want to delete this customer?')) {
-                customers = customers.filter(customer => customer.id !== id);
-                updateCustomerTable();
-                showNotification('Customer deleted successfully!', 'success');
-            }
+        function showMainContent() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            updateAddUserButtonVisibility();
         }
 
-        function clearCustomerForm() {
-            document.getElementById('customer-name').value = '';
-            document.getElementById('customer-email').value = '';
-            document.getElementById('customer-phone').value = '';
-            document.getElementById('customer-company').value = '';
+        function showMainLoginForm() {
+            document.getElementById('addUserSection').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            updateAddUserButtonVisibility();
         }
 
-        // Inventory Functions
-        function addProduct() {
-            const name = document.getElementById('product-name').value;
-            const sku = document.getElementById('product-sku').value;
-            const category = document.getElementById('product-category').value;
-            const price = parseFloat(document.getElementById('product-price').value);
-            const quantity = parseInt(document.getElementById('product-quantity').value);
-
-            if (!name || !sku || !category || !price || !quantity) {
-                alert('Please fill in all required fields');
+        function showAddUserForm() {
+            // Check if current user is gitz.tech (admin)
+            const currentUsername = sessionStorage.getItem('webveda_username');
+            if (currentUsername !== 'gitz.tech') {
+                alert('Only admin users can add new users.');
                 return;
             }
-
-            let status = 'In Stock';
-            if (quantity === 0) status = 'Out of Stock';
-            else if (quantity < 20) status = 'Low Stock';
-
-            const newProduct = {
-                id: products.length + 1,
-                name: name,
-                sku: sku,
-                category: category,
-                price: price,
-                quantity: quantity,
-                status: status
-            };
-
-            products.push(newProduct);
-            updateProductTable();
-            clearProductForm();
-            showNotification('Product added successfully!', 'success');
-        }
-
-        function updateProductTable() {
-            const tbody = document.querySelector('#inventory .table tbody');
-            tbody.innerHTML = '';
-
-            products.forEach(product => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${product.name}</td>
-                    <td>${product.sku}</td>
-                    <td>${product.category}</td>
-                    <td>$${product.price.toFixed(2)}</td>
-                    <td>${product.quantity}</td>
-                    <td><span class="status-badge status-${product.status.toLowerCase().replace(' ', '')}">${product.status}</span></td>
-                    <td>
-                        <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editProduct(${product.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteProduct(${product.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function deleteProduct(id) {
-            if (confirm('Are you sure you want to delete this product?')) {
-                products = products.filter(product => product.id !== id);
-                updateProductTable();
-                showNotification('Product deleted successfully!', 'success');
-            }
-        }
-
-        function clearProductForm() {
-            document.getElementById('product-name').value = '';
-            document.getElementById('product-sku').value = '';
-            document.getElementById('product-category').value = '';
-            document.getElementById('product-price').value = '';
-            document.getElementById('product-quantity').value = '';
-        }
-
-        // Finance Functions
-        function addTransaction() {
-            const type = document.getElementById('transaction-type').value;
-            const amount = parseFloat(document.getElementById('transaction-amount').value);
-            const category = document.getElementById('transaction-category').value;
-            const description = document.getElementById('transaction-description').value;
-
-            if (!type || !amount || !category || !description) {
-                alert('Please fill in all required fields');
-                return;
-            }
-
-            const transactionAmount = type === 'Income' ? amount : -amount;
-            const lastBalance = transactions.length > 0 ? transactions[0].balance : 0;
-            const newBalance = lastBalance + transactionAmount;
-
-            const newTransaction = {
-                id: transactions.length + 1,
-                date: new Date().toISOString().split('T')[0],
-                type: type,
-                category: category,
-                description: description,
-                amount: transactionAmount,
-                balance: newBalance
-            };
-
-            transactions.unshift(newTransaction);
-            updateTransactionTable();
-            clearTransactionForm();
-            updateFinancialCards();
-            showNotification('Transaction added successfully!', 'success');
-        }
-
-        function updateTransactionTable() {
-            const tbody = document.querySelector('#finance .table tbody');
-            tbody.innerHTML = '';
-
-            transactions.forEach(transaction => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${transaction.date}</td>
-                    <td><span class="status-badge status-${transaction.type.toLowerCase()}">${transaction.type}</span></td>
-                    <td>${transaction.category}</td>
-                    <td>${transaction.description}</td>
-                    <td style="color: ${transaction.amount > 0 ? '#28a745' : '#dc3545'};">${transaction.amount > 0 ? '+' : ''}$${Math.abs(transaction.amount).toLocaleString()}</td>
-                    <td>$${transaction.balance.toLocaleString()}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function updateFinancialCards() {
-            const income = transactions.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
-            const expenses = Math.abs(transactions.filter(t => t.type === 'Expense').reduce((sum, t) => sum + t.amount, 0));
-            const profit = income - expenses;
-            const margin = income > 0 ? ((profit / income) * 100).toFixed(1) : 0;
-
-            document.querySelector('#finance .card:nth-child(1) .card-value').textContent = '$' + income.toLocaleString();
-            document.querySelector('#finance .card:nth-child(2) .card-value').textContent = '$' + expenses.toLocaleString();
-            document.querySelector('#finance .card:nth-child(3) .card-value').textContent = '$' + profit.toLocaleString();
-            document.querySelector('#finance .card:nth-child(4) .card-value').textContent = margin + '%';
-        }
-
-        function clearTransactionForm() {
-            document.getElementById('transaction-type').value = '';
-            document.getElementById('transaction-amount').value = '';
-            document.getElementById('transaction-category').value = '';
-            document.getElementById('transaction-description').value = '';
-        }
-
-        // Project Functions
-        function addProject() {
-            const name = document.getElementById('project-name').value;
-            const client = document.getElementById('project-client').value;
-            const startDate = document.getElementById('project-start').value;
-            const endDate = document.getElementById('project-end').value;
-            const status = document.getElementById('project-status').value;
-            const budget = parseFloat(document.getElementById('project-budget').value);
-
-            if (!name || !client || !startDate || !endDate || !status || !budget) {
-                alert('Please fill in all required fields');
-                return;
-            }
-
-            const newProject = {
-                id: projects.length + 1,
-                name: name,
-                client: client,
-                startDate: startDate,
-                endDate: endDate,
-                progress: 0,
-                status: status,
-                budget: budget
-            };
-
-            projects.push(newProject);
-            updateProjectTable();
-            clearProjectForm();
-            showNotification('Project created successfully!', 'success');
-        }
-
-        function updateProjectTable() {
-            const tbody = document.querySelector('#projects .table tbody');
-            tbody.innerHTML = '';
-
-            projects.forEach(project => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${project.name}</td>
-                    <td>${project.client}</td>
-                    <td>${project.startDate}</td>
-                    <td>${project.endDate}</td>
-                    <td>${project.progress}%</td>
-                    <td><span class="status-badge status-${project.status.toLowerCase().replace(' ', '')}">${project.status}</span></td>
-                    <td>$${project.budget.toLocaleString()}</td>
-                    <td>
-                        <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editProject(${project.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-warning" style="padding: 6px 12px; font-size: 0.8rem;" onclick="viewProject(${project.id})">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function clearProjectForm() {
-            document.getElementById('project-name').value = '';
-            document.getElementById('project-client').value = '';
-            document.getElementById('project-start').value = '';
-            document.getElementById('project-end').value = '';
-            document.getElementById('project-status').value = '';
-            document.getElementById('project-budget').value = '';
-        }
-
-        // Order Functions
-        function addOrder() {
-            const customerId = document.getElementById('order-customer').value;
-            const productId = document.getElementById('order-product').value;
-            const quantity = parseInt(document.getElementById('order-quantity').value);
-            const status = document.getElementById('order-status').value;
-
-            if (!customerId || !productId || !quantity) {
-                alert('Please fill in all required fields');
-                return;
-            }
-
-            const customer = customers.find(c => c.id == customerId);
-            const product = products.find(p => p.id == productId);
             
-            if (!customer || !product) {
-                alert('Invalid customer or product selection');
-                return;
-            }
-
-            if (product.quantity < quantity) {
-                alert('Insufficient stock available');
-                return;
-            }
-
-            const total = product.price * quantity;
-            const newOrder = {
-                id: orders.length + 1,
-                customerId: parseInt(customerId),
-                customerName: customer.name,
-                date: new Date().toISOString().split('T')[0],
-                total: total,
-                status: status,
-                items: [{
-                    productId: parseInt(productId),
-                    name: product.name,
-                    quantity: quantity,
-                    price: product.price
-                }]
-            };
-
-            // Update product quantity
-            product.quantity -= quantity;
-            if (product.quantity === 0) product.status = 'Out of Stock';
-            else if (product.quantity < product.reorderLevel) product.status = 'Low Stock';
-
-            orders.push(newOrder);
-            updateOrderTable();
-            updateProductTable();
-            clearOrderForm();
-            showNotification('Order created successfully!', 'success');
+            // Hide main content and show add user form
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('addUserSection').style.display = 'flex';
         }
 
-        function updateOrderTable() {
-            const tbody = document.querySelector('#orders .table tbody');
-            tbody.innerHTML = '';
-
-            orders.forEach(order => {
-                const itemsText = order.items.map(item => `${item.quantity}x ${item.name}`).join(', ');
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>#${1000 + order.id}</td>
-                    <td>${order.customerName}</td>
-                    <td>${order.date}</td>
-                    <td>${itemsText}</td>
-                    <td>$${order.total.toFixed(2)}</td>
-                    <td><span class="status-badge status-${order.status.toLowerCase().replace(' ', '')}">${order.status}</span></td>
-                    <td>
-                        <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="viewOrder(${order.id})">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn btn-warning" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editOrder(${order.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteOrder(${order.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+        function showLoginForm() {
+            document.getElementById('addUserSection').style.display = 'none';
+            document.getElementById('loginSection').style.display = 'flex';
+            updateAddUserButtonVisibility();
         }
 
-        function deleteOrder(id) {
-            if (confirm('Are you sure you want to delete this order?')) {
-                orders = orders.filter(order => order.id !== id);
-                updateOrderTable();
-                showNotification('Order deleted successfully!', 'success');
+        function logout() {
+            // Clear session storage
+            sessionStorage.removeItem('webveda_logged_in');
+            sessionStorage.removeItem('webveda_username');
+            sessionStorage.removeItem('webveda_user_role');
+            sessionStorage.removeItem('webveda_user_name');
+            
+            // Show login form
+            showLoginForm();
+            
+            // Show logout message
+            showNotification('Logged out successfully!', 'success');
+        }
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('togglePassword');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
             }
         }
 
-        function clearOrderForm() {
-            document.getElementById('order-customer').value = '';
-            document.getElementById('order-product').value = '';
-            document.getElementById('order-quantity').value = '';
-            document.getElementById('order-status').value = '';
-        }
-
-        // Employee Functions
-        function addEmployee() {
-            const name = document.getElementById('employee-name').value;
-            const email = document.getElementById('employee-email').value;
-            const position = document.getElementById('employee-position').value;
-            const department = document.getElementById('employee-department').value;
-            const salary = parseFloat(document.getElementById('employee-salary').value);
-            const joinDate = document.getElementById('employee-join-date').value;
-
-            if (!name || !email || !position || !department || !salary || !joinDate) {
-                alert('Please fill in all required fields');
-                return;
-            }
-
-            const newEmployee = {
-                id: employees.length + 1,
-                name: name,
-                email: email,
-                position: position,
-                department: department,
-                salary: salary,
-                joinDate: joinDate,
-                status: 'Active'
-            };
-
-            employees.push(newEmployee);
-            updateEmployeeTable();
-            clearEmployeeForm();
-            showNotification('Employee added successfully!', 'success');
-        }
-
-        function updateEmployeeTable() {
-            const tbody = document.querySelector('#employees .table tbody');
-            tbody.innerHTML = '';
-
-            employees.forEach(employee => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${employee.name}</td>
-                    <td>${employee.email}</td>
-                    <td>${employee.position}</td>
-                    <td>${employee.department}</td>
-                    <td>$${employee.salary.toLocaleString()}</td>
-                    <td>${employee.joinDate}</td>
-                    <td><span class="status-badge status-${employee.status.toLowerCase()}">${employee.status}</span></td>
-                    <td>
-                        <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editEmployee(${employee.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-warning" style="padding: 6px 12px; font-size: 0.8rem;" onclick="viewEmployee(${employee.id})">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteEmployee(${employee.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function deleteEmployee(id) {
-            if (confirm('Are you sure you want to delete this employee?')) {
-                employees = employees.filter(employee => employee.id !== id);
-                updateEmployeeTable();
-                showNotification('Employee deleted successfully!', 'success');
+        function toggleNewPassword() {
+            const passwordInput = document.getElementById('newPassword');
+            const toggleIcon = document.getElementById('toggleNewPassword');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
             }
         }
 
-        function clearEmployeeForm() {
-            document.getElementById('employee-name').value = '';
-            document.getElementById('employee-email').value = '';
-            document.getElementById('employee-position').value = '';
-            document.getElementById('employee-department').value = '';
-            document.getElementById('employee-salary').value = '';
-            document.getElementById('employee-join-date').value = '';
-        }
-
-        // Supplier Functions
-        function addSupplier() {
-            const name = document.getElementById('supplier-name').value;
-            const email = document.getElementById('supplier-email').value;
-            const phone = document.getElementById('supplier-phone').value;
-            const category = document.getElementById('supplier-category').value;
-            const rating = parseFloat(document.getElementById('supplier-rating').value);
-
-            if (!name || !email || !phone || !category || !rating) {
-                alert('Please fill in all required fields');
-                return;
-            }
-
-            const newSupplier = {
-                id: suppliers.length + 1,
-                name: name,
-                email: email,
-                phone: phone,
-                category: category,
-                rating: rating,
-                totalOrders: 0
-            };
-
-            suppliers.push(newSupplier);
-            updateSupplierTable();
-            clearSupplierForm();
-            showNotification('Supplier added successfully!', 'success');
-        }
-
-        function updateSupplierTable() {
-            const tbody = document.querySelector('#suppliers .table tbody');
-            tbody.innerHTML = '';
-
-            suppliers.forEach(supplier => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${supplier.name}</td>
-                    <td>${supplier.email}</td>
-                    <td>${supplier.phone}</td>
-                    <td>${supplier.category}</td>
-                    <td>${supplier.rating} ⭐</td>
-                    <td>${supplier.totalOrders}</td>
-                    <td>
-                        <button class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editSupplier(${supplier.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-warning" style="padding: 6px 12px; font-size: 0.8rem;" onclick="viewSupplier(${supplier.id})">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteSupplier(${supplier.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function deleteSupplier(id) {
-            if (confirm('Are you sure you want to delete this supplier?')) {
-                suppliers = suppliers.filter(supplier => supplier.id !== id);
-                updateSupplierTable();
-                showNotification('Supplier deleted successfully!', 'success');
+        function toggleConfirmPassword() {
+            const passwordInput = document.getElementById('confirmPassword');
+            const toggleIcon = document.getElementById('toggleConfirmPassword');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
             }
         }
 
-        function clearSupplierForm() {
-            document.getElementById('supplier-name').value = '';
-            document.getElementById('supplier-email').value = '';
-            document.getElementById('supplier-phone').value = '';
-            document.getElementById('supplier-category').value = '';
-            document.getElementById('supplier-rating').value = '';
+        function checkLoginStatus() {
+            const isLoggedIn = sessionStorage.getItem('webveda_logged_in');
+            if (isLoggedIn === 'true') {
+                showMainContent();
+            } else {
+                showLoginForm();
+            }
         }
 
-        // Enhanced Dashboard Functions
-        function updateDashboardStats() {
-            const totalRevenue = transactions.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
-            const totalExpenses = Math.abs(transactions.filter(t => t.type === 'Expense').reduce((sum, t) => sum + t.amount, 0));
-            const totalProfit = totalRevenue - totalExpenses;
-            const totalOrders = orders.length;
-            const totalCustomers = customers.length;
-            const totalProducts = products.length;
-            const totalEmployees = employees.length;
-
-            // Update main dashboard cards
-            document.querySelector('#dashboard .card:nth-child(1) .card-value').textContent = '$' + totalRevenue.toLocaleString();
-            document.querySelector('#dashboard .card:nth-child(2) .card-value').textContent = totalCustomers.toLocaleString();
-            document.querySelector('#dashboard .card:nth-child(3) .card-value').textContent = totalOrders.toLocaleString();
-            document.querySelector('#dashboard .card:nth-child(4) .card-value').textContent = ((totalProfit / totalRevenue) * 100).toFixed(1) + '%';
-
-            // Update advanced analytics cards
-            const lowStockCount = getLowStockProducts().length;
-            const pendingOrdersCount = orders.filter(o => o.status === 'Pending').length;
-            const topCustomersCount = getTopCustomers().length;
-            const growthRate = ((totalRevenue / 100000) * 100).toFixed(1);
-
-            const lowStockElement = document.getElementById('low-stock-count');
-            const pendingOrdersElement = document.getElementById('pending-orders-count');
-            const topCustomersElement = document.getElementById('top-customers-count');
-            const growthRateElement = document.getElementById('growth-rate');
-
-            if (lowStockElement) lowStockElement.textContent = lowStockCount;
-            if (pendingOrdersElement) pendingOrdersElement.textContent = pendingOrdersCount;
-            if (topCustomersElement) topCustomersElement.textContent = topCustomersCount;
-            if (growthRateElement) growthRateElement.textContent = growthRate + '%';
+        function updateAddUserButtonVisibility() {
+            const showAddUserBtn = document.getElementById('showAddUserBtn');
+            const addUserNavBtn = document.getElementById('addUserNavBtn');
+            const currentUsername = sessionStorage.getItem('webveda_username');
+            
+            if (showAddUserBtn) {
+                if (currentUsername === 'gitz.tech') {
+                    showAddUserBtn.style.display = 'inline-block';
+                } else {
+                    showAddUserBtn.style.display = 'none';
+                }
+            }
+            
+            if (addUserNavBtn) {
+                if (currentUsername === 'gitz.tech') {
+                    addUserNavBtn.style.display = 'inline-block';
+                } else {
+                    addUserNavBtn.style.display = 'none';
+                }
+            }
         }
 
-        // Advanced Search and Filter Functions
-        function searchCustomers(query) {
-            const filtered = customers.filter(customer => 
-                customer.name.toLowerCase().includes(query.toLowerCase()) ||
-                customer.email.toLowerCase().includes(query.toLowerCase()) ||
-                customer.company.toLowerCase().includes(query.toLowerCase())
-            );
-            return filtered;
-        }
-
-        function filterProductsByCategory(category) {
-            if (category === 'All') return products;
-            return products.filter(product => product.category === category);
-        }
-
-        function getLowStockProducts() {
-            return products.filter(product => product.status === 'Low Stock' || product.status === 'Out of Stock');
-        }
-
-        function getTopCustomers() {
-            return customers.sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 5);
-        }
-
-        // Report Functions
-        function generateReport(type) {
-            showNotification(`${type} report generated successfully!`, 'success');
-            // In a real application, this would generate and download a report
-        }
-
-        function exportReport(format) {
-            showNotification(`Report exported as ${format.toUpperCase()} successfully!`, 'success');
-            // In a real application, this would export the report
-        }
-
-        // Utility Functions
+        // Utility functions
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.style.cssText = `
@@ -2760,401 +2158,18 @@
                 from { transform: translateX(0); opacity: 1; }
                 to { transform: translateX(100%); opacity: 0; }
             }
-        `;
-        document.head.appendChild(style);
-
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize all tables
-            updateCustomerTable();
-            updateProductTable();
-            updateTransactionTable();
-            updateProjectTable();
-            updateOrderTable();
-            updateEmployeeTable();
-            updateSupplierTable();
-            updateFinancialCards();
-            updateDashboardStats();
-
-            // Populate dropdowns
-            populateOrderDropdowns();
-
-            // Add click handlers for quick actions
-            const quickActions = document.querySelectorAll('.quick-action');
-            quickActions.forEach(action => {
-                action.addEventListener('click', function() {
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = 'translateY(-3px)';
-                    }, 150);
-                });
-            });
-
-            // Add form submission handlers
-            const forms = document.querySelectorAll('.form-input');
-            forms.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.style.borderColor = '#667eea';
-                });
-
-                input.addEventListener('blur', function() {
-                    this.style.borderColor = '#e1e5e9';
-                });
-            });
-
-            // Add button click animations
-            const buttons = document.querySelectorAll('.btn');
-            buttons.forEach(button => {
-                button.addEventListener('click', function() {
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1)';
-                    }, 150);
-                });
-            });
-
-            // Add form submit handlers
-            document.querySelector('#crm .btn-primary').addEventListener('click', addCustomer);
-            document.querySelector('#inventory .btn-primary').addEventListener('click', addProduct);
-            document.querySelector('#orders .btn-primary').addEventListener('click', addOrder);
-            document.querySelector('#finance .btn-primary').addEventListener('click', addTransaction);
-            document.querySelector('#projects .btn-primary').addEventListener('click', addProject);
-            document.querySelector('#employees .btn-primary').addEventListener('click', addEmployee);
-            document.querySelector('#suppliers .btn-primary').addEventListener('click', addSupplier);
-
-            // Add report generation handlers
-            document.querySelector('#reports .btn-primary').addEventListener('click', () => exportReport('pdf'));
-            document.querySelector('#reports .btn-success').addEventListener('click', () => exportReport('excel'));
-            document.querySelector('#reports .btn-warning').addEventListener('click', () => generateReport('Performance'));
-
-            // Add real-time updates
-            setInterval(updateDashboardStats, 5000);
-        });
-
-        // Helper function to populate order dropdowns
-        function populateOrderDropdowns() {
-            const customerSelect = document.getElementById('order-customer');
-            const productSelect = document.getElementById('order-product');
-
-            if (customerSelect) {
-                customerSelect.innerHTML = '<option value="">Select Customer</option>';
-                customers.forEach(customer => {
-                    customerSelect.innerHTML += `<option value="${customer.id}">${customer.name} - ${customer.company}</option>`;
-                });
-            }
-
-            if (productSelect) {
-                productSelect.innerHTML = '<option value="">Select Product</option>';
-                products.forEach(product => {
-                    productSelect.innerHTML += `<option value="${product.id}">${product.name} - $${product.price} (${product.quantity} in stock)</option>`;
-                });
-            }
-        }
-
-        // Simulate real-time data updates
-        setInterval(() => {
-            const cardValues = document.querySelectorAll('.card-value');
-            cardValues.forEach(card => {
-                if (card.textContent.includes('$')) {
-                    const currentValue = parseInt(card.textContent.replace(/[^0-9]/g, ''));
-                    const fluctuation = Math.floor(Math.random() * 100) - 50;
-                    const newValue = Math.max(0, currentValue + fluctuation);
-                    card.textContent = '$' + newValue.toLocaleString();
-                }
-            });
-        }, 10000);
-
-        // Login System Functions
-        // Users array will be loaded from Firebase
-
-        const DEFAULT_USERNAME = 'gitz.tech';
-        const DEFAULT_PASSWORD = 'Gitez.Maha@Ubi9186';
-
-        function checkLoginStatus() {
-            const isLoggedIn = sessionStorage.getItem('webveda_logged_in');
-            if (isLoggedIn === 'true') {
-                showMainContent();
-            } else {
-                showLoginForm();
-            }
-        }
-
-        function showLoginForm() {
-            document.getElementById('loginSection').style.display = 'flex';
-            document.getElementById('mainContent').style.display = 'none';
-        }
-
-        function showMainContent() {
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'block';
-            updateAddUserButtonVisibility();
-        }
-
-        async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
-            const successMessage = document.getElementById('successMessage');
-            const loginBtn = document.getElementById('loginBtn');
-
-            // Hide previous messages
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-
-            try {
-                // Show loading state
-                loginBtn.disabled = true;
-                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-
-                // Find user in Firebase users collection
-                const userQuery = await db.collection('users').where('username', '==', username).get();
-                
-                if (!userQuery.empty) {
-                    const userDoc = userQuery.docs[0];
-                    const userData = userDoc.data();
-                    
-                    // Simple password check (in production, use proper hashing)
-                    if (userData.password === password) {
-                        // Show success message
-                        successMessage.style.display = 'block';
-                        
-                        // Simulate login delay
-                        setTimeout(() => {
-                            // Store login status and user info
-                            sessionStorage.setItem('webveda_logged_in', 'true');
-                            sessionStorage.setItem('webveda_username', username);
-                            sessionStorage.setItem('webveda_user_role', userData.role);
-                            sessionStorage.setItem('webveda_user_name', userData.name);
-                            
-                            // Show main content
-                            showMainContent();
-                            
-                            // Reset form
-                            document.getElementById('loginForm').reset();
-                            loginBtn.disabled = false;
-                            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-                            successMessage.style.display = 'none';
-                        }, 1500);
-                    } else {
-                        throw new Error('Invalid password');
-                    }
-                } else {
-                    throw new Error('User not found');
-                }
-            } catch (error) {
-                // Show error message
-                errorMessage.style.display = 'block';
-                
-                // Clear password field
-                document.getElementById('password').value = '';
-                
-                // Reset button
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-                
-                // Shake animation
-                const loginCard = document.querySelector('.login-card');
-                loginCard.style.animation = 'shake 0.5s ease-in-out';
-                setTimeout(() => {
-                    loginCard.style.animation = '';
-                }, 500);
-            }
-        }
-
-        function logout() {
-            // Clear session storage
-            sessionStorage.removeItem('webveda_logged_in');
-            sessionStorage.removeItem('webveda_username');
-            sessionStorage.removeItem('webveda_user_role');
-            sessionStorage.removeItem('webveda_user_name');
-            
-            // Show login form
-            showLoginForm();
-            
-            // Show logout message
-            showNotification('Logged out successfully!', 'success');
-        }
-
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('togglePassword');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            }
-        }
-
-        // User Management Functions
-        function showAddUserForm() {
-            // Check if current user is gitz.tech (admin)
-            const currentUsername = sessionStorage.getItem('webveda_username');
-            if (currentUsername !== 'gitz.tech') {
-                alert('Only admin users can add new users.');
-                return;
-            }
-            
-            // Hide main content and show add user form
-            document.getElementById('mainContent').style.display = 'none';
-            document.getElementById('addUserSection').style.display = 'flex';
-        }
-
-        function showLoginForm() {
-            document.getElementById('addUserSection').style.display = 'none';
-            document.getElementById('loginSection').style.display = 'flex';
-            updateAddUserButtonVisibility();
-        }
-
-        function showMainLoginForm() {
-            document.getElementById('addUserSection').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'block';
-            updateAddUserButtonVisibility();
-        }
-
-        async function addUser() {
-            const name = document.getElementById('newUserName').value;
-            const email = document.getElementById('newUserEmail').value;
-            const username = document.getElementById('newUsername').value;
-            const password = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const role = document.getElementById('newUserRole').value;
-            const errorMessage = document.getElementById('addUserErrorMessage');
-            const successMessage = document.getElementById('addUserSuccessMessage');
-            const addUserBtn = document.getElementById('addUserBtn');
-
-            // Hide previous messages
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-
-            // Validation
-            if (!name || !email || !username || !password || !confirmPassword || !role) {
-                errorMessage.textContent = 'Please fill in all fields.';
-                errorMessage.style.display = 'block';
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                errorMessage.textContent = 'Passwords do not match.';
-                errorMessage.style.display = 'block';
-                return;
-            }
-
-            if (password.length < 6) {
-                errorMessage.textContent = 'Password must be at least 6 characters long.';
-                errorMessage.style.display = 'block';
-                return;
-            }
-
-            try {
-                // Check if username already exists in Firebase
-                const usernameQuery = await db.collection('users').where('username', '==', username).get();
-                if (!usernameQuery.empty) {
-                    errorMessage.textContent = 'Username already exists. Please choose a different username.';
-                    errorMessage.style.display = 'block';
-                    return;
-                }
-
-                // Check if email already exists in Firebase
-                const emailQuery = await db.collection('users').where('email', '==', email).get();
-                if (!emailQuery.empty) {
-                    errorMessage.textContent = 'Email already exists. Please use a different email.';
-                    errorMessage.style.display = 'block';
-                    return;
-                }
-
-                // Add new user to Firebase
-                const newUser = {
-                    username: username,
-                    password: password,
-                    role: role,
-                    name: name,
-                    email: email
-                };
-
-                await addUserToFirebase(newUser);
-
-                // Show success message
-                successMessage.style.display = 'block';
-                addUserBtn.disabled = true;
-                addUserBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding User...';
-
-                // Simulate delay
-                setTimeout(() => {
-                    // Reset form
-                    document.getElementById('addUserForm').reset();
-                    addUserBtn.disabled = false;
-                    addUserBtn.innerHTML = '<i class="fas fa-user-plus"></i> Add User';
-                    successMessage.style.display = 'none';
-                    
-                    // Show main content
-                    showMainLoginForm();
-                    
-                    // Show success notification
-                    showNotification('User added successfully! You can now login with the new credentials.', 'success');
-                }, 1500);
-            } catch (error) {
-                errorMessage.textContent = 'Error adding user to database. Please try again.';
-                errorMessage.style.display = 'block';
-                addUserBtn.disabled = false;
-                addUserBtn.innerHTML = '<i class="fas fa-user-plus"></i> Add User';
-            }
-        }
-
-        function toggleNewPassword() {
-            const passwordInput = document.getElementById('newPassword');
-            const toggleIcon = document.getElementById('toggleNewPassword');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            }
-        }
-
-        function toggleConfirmPassword() {
-            const passwordInput = document.getElementById('confirmPassword');
-            const toggleIcon = document.getElementById('toggleConfirmPassword');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            }
-        }
-
-        // Add shake animation
-        const shakeStyle = document.createElement('style');
-        shakeStyle.textContent = `
             @keyframes shake {
                 0%, 100% { transform: translateX(0); }
                 25% { transform: translateX(-5px); }
                 75% { transform: translateX(5px); }
             }
         `;
-        document.head.appendChild(shakeStyle);
+        document.head.appendChild(style);
 
-        // Initialize login system
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Initialize Firebase data
-            try {
-                await initializeFirebaseData();
-            } catch (error) {
-                console.error('Error initializing Firebase data:', error);
-            }
-
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, initializing...');
+            
             // Check login status on page load
             checkLoginStatus();
 
@@ -3206,29 +2221,6 @@
                 updateAddUserButtonVisibility();
             }, 100);
         });
-
-        // Function to update Add User button visibility
-        function updateAddUserButtonVisibility() {
-            const showAddUserBtn = document.getElementById('showAddUserBtn');
-            const addUserNavBtn = document.getElementById('addUserNavBtn');
-            const currentUsername = sessionStorage.getItem('webveda_username');
-            
-            if (showAddUserBtn) {
-                if (currentUsername === 'gitz.tech') {
-                    showAddUserBtn.style.display = 'inline-block';
-                } else {
-                    showAddUserBtn.style.display = 'none';
-                }
-            }
-            
-            if (addUserNavBtn) {
-                if (currentUsername === 'gitz.tech') {
-                    addUserNavBtn.style.display = 'inline-block';
-                } else {
-                    addUserNavBtn.style.display = 'none';
-                }
-            }
-        }
     </script>
 </body>
 </html>
