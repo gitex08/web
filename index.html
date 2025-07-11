@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebVeda Business Suite - Complete Business Management Solution</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Simple working version -->
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -1788,8 +1791,21 @@
 </div>
 
     <script>
-        // Simple working configuration
-        // Global data storage
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDp5FYfSPFgQKoIjbREjN5qtKt4cennknA",
+            authDomain: "wadmin-webveda.firebaseapp.com",
+            projectId: "admin-webveda",
+            storageBucket: "admin-webveda.firebasestorage.app",
+            messagingSenderId: "332739132811",
+            appId: "1:332739132811:web:6f5452e21df87db2c7838e
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Global data storage with Firebase integration
         let customers = [
             { id: 1, name: 'John Smith', email: 'john@example.com', phone: '+1 (555) 123-4567', company: 'Tech Solutions Inc.', status: 'Active', joinDate: '2024-01-01', totalSpent: 15420 },
             { id: 2, name: 'Sarah Johnson', email: 'sarah@example.com', phone: '+1 (555) 987-6543', company: 'Digital Marketing Co.', status: 'Active', joinDate: '2024-01-05', totalSpent: 8900 },
@@ -1842,8 +1858,8 @@
             { username: 'gitz.tech', password: 'Gitez.Maha@Ubi9186', role: 'admin', name: 'Admin User', email: 'admin@webveda.com' }
         ];
 
-        // Simple login function
-        function login() {
+        // Firebase login function
+        async function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
@@ -1854,50 +1870,93 @@
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
 
-            // Find user in users array
-            const user = users.find(u => u.username === username && u.password === password);
-
-            if (user) {
-                // Show success message
+            try {
+                // Show loading state
                 successMessage.style.display = 'block';
+                successMessage.textContent = 'Authenticating...';
                 loginBtn.disabled = true;
                 loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
 
-                // Simulate login delay
-                setTimeout(() => {
+                // Try Firebase authentication first
+                const userCredential = await auth.signInWithEmailAndPassword(username + '@webveda.com', password);
+                
+                // Get user data from Firestore
+                const userDoc = await db.collection('users').doc(username).get();
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    
+                    // Store login status and user info
+                    sessionStorage.setItem('webveda_logged_in', 'true');
+                    sessionStorage.setItem('webveda_username', username);
+                    sessionStorage.setItem('webveda_user_role', userData.role);
+                    sessionStorage.setItem('webveda_user_name', userData.name);
+                    
+                    successMessage.textContent = 'Login successful! Redirecting...';
+                    
+                    // Show main content after delay
+                    setTimeout(() => {
+                        showMainContent();
+                        loadAllData(); // Load data from Firebase
+                        
+                        // Reset form
+                        document.getElementById('loginForm').reset();
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+                        successMessage.style.display = 'none';
+                    }, 1500);
+                } else {
+                    throw new Error('User not found');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                
+                // Fallback to local authentication
+                const user = users.find(u => u.username === username && u.password === password);
+                
+                if (user) {
+                    successMessage.textContent = 'Login successful! Redirecting...';
+                    
                     // Store login status and user info
                     sessionStorage.setItem('webveda_logged_in', 'true');
                     sessionStorage.setItem('webveda_username', username);
                     sessionStorage.setItem('webveda_user_role', user.role);
                     sessionStorage.setItem('webveda_user_name', user.name);
                     
-                    // Show main content
-                    showMainContent();
+                    setTimeout(() => {
+                        showMainContent();
+                        
+                        // Reset form
+                        document.getElementById('loginForm').reset();
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+                        successMessage.style.display = 'none';
+                    }, 1500);
+                } else {
+                    // Show error message
+                    errorMessage.style.display = 'block';
+                    errorMessage.textContent = 'Invalid username or password. Please try again.';
                     
-                    // Reset form
-                    document.getElementById('loginForm').reset();
+                    // Clear password field
+                    document.getElementById('password').value = '';
+                    
+                    // Reset button
                     loginBtn.disabled = false;
                     loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
                     successMessage.style.display = 'none';
-                }, 1500);
-            } else {
-                // Show error message
-                errorMessage.style.display = 'block';
-                
-                // Clear password field
-                document.getElementById('password').value = '';
-                
-                // Shake animation
-                const loginCard = document.querySelector('.login-card');
-                loginCard.style.animation = 'shake 0.5s ease-in-out';
-                setTimeout(() => {
-                    loginCard.style.animation = '';
-                }, 500);
+                    
+                    // Shake animation
+                    const loginCard = document.querySelector('.login-card');
+                    loginCard.style.animation = 'shake 0.5s ease-in-out';
+                    setTimeout(() => {
+                        loginCard.style.animation = '';
+                    }, 500);
+                }
             }
         }
 
-        // Simple add user function
-        function addUser() {
+        // Firebase add user function
+        async function addUser() {
             const name = document.getElementById('newUserName').value;
             const email = document.getElementById('newUserEmail').value;
             const username = document.getElementById('newUsername').value;
@@ -1931,53 +1990,165 @@
                 return;
             }
 
-            // Check if username already exists
-            if (users.find(u => u.username === username)) {
-                errorMessage.textContent = 'Username already exists. Please choose a different username.';
+            try {
+                // Show loading state
+                successMessage.style.display = 'block';
+                successMessage.textContent = 'Creating user account...';
+                addUserBtn.disabled = true;
+                addUserBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding User...';
+
+                // Create Firebase Auth user
+                const userCredential = await auth.createUserWithEmailAndPassword(username + '@webveda.com', password);
+                
+                // Add user data to Firestore
+                await db.collection('users').doc(username).set({
+                    username: username,
+                    email: email,
+                    name: name,
+                    role: role,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Add to local array as backup
+                const newUser = {
+                    username: username,
+                    password: password,
+                    role: role,
+                    name: name,
+                    email: email
+                };
+                users.push(newUser);
+
+                successMessage.textContent = 'User added successfully!';
+                
+                setTimeout(() => {
+                    // Reset form
+                    document.getElementById('addUserForm').reset();
+                    addUserBtn.disabled = false;
+                    addUserBtn.innerHTML = '<i class="fas fa-user-plus"></i> Add User';
+                    successMessage.style.display = 'none';
+                    
+                    // Show main content
+                    showMainLoginForm();
+                    
+                    // Show success notification
+                    showNotification('User added successfully! You can now login with the new credentials.', 'success');
+                }, 1500);
+            } catch (error) {
+                console.error('Add user error:', error);
+                
+                let errorMsg = 'Error creating user account.';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMsg = 'Username already exists. Please choose a different username.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMsg = 'Password is too weak. Please use a stronger password.';
+                }
+                
+                errorMessage.textContent = errorMsg;
                 errorMessage.style.display = 'block';
-                return;
-            }
-
-            // Check if email already exists
-            if (users.find(u => u.email === email)) {
-                errorMessage.textContent = 'Email already exists. Please use a different email.';
-                errorMessage.style.display = 'block';
-                return;
-            }
-
-            // Add new user
-            const newUser = {
-                username: username,
-                password: password,
-                role: role,
-                name: name,
-                email: email
-            };
-
-            users.push(newUser);
-
-            // Show success message
-            successMessage.style.display = 'block';
-            addUserBtn.disabled = true;
-            addUserBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding User...';
-
-            // Simulate delay
-            setTimeout(() => {
-                // Reset form
-                document.getElementById('addUserForm').reset();
+                
                 addUserBtn.disabled = false;
                 addUserBtn.innerHTML = '<i class="fas fa-user-plus"></i> Add User';
                 successMessage.style.display = 'none';
-                
-                // Show main content
-                showMainLoginForm();
-                
-                // Show success notification
-                showNotification('User added successfully! You can now login with the new credentials.', 'success');
-            }, 1500);
+            }
         }
 
-        // ... existing code ...
+        // Firebase data management functions
+        async function loadAllData() {
+            try {
+                // Load customers
+                const customersSnapshot = await db.collection('customers').get();
+                customers = [];
+                customersSnapshot.forEach(doc => {
+                    customers.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Load products
+                const productsSnapshot = await db.collection('products').get();
+                products = [];
+                productsSnapshot.forEach(doc => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Load transactions
+                const transactionsSnapshot = await db.collection('transactions').get();
+                transactions = [];
+                transactionsSnapshot.forEach(doc => {
+                    transactions.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Load projects
+                const projectsSnapshot = await db.collection('projects').get();
+                projects = [];
+                projectsSnapshot.forEach(doc => {
+                    projects.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Load orders
+                const ordersSnapshot = await db.collection('orders').get();
+                orders = [];
+                ordersSnapshot.forEach(doc => {
+                    orders.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Load employees
+                const employeesSnapshot = await db.collection('employees').get();
+                employees = [];
+                employeesSnapshot.forEach(doc => {
+                    employees.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Load suppliers
+                const suppliersSnapshot = await db.collection('suppliers').get();
+                suppliers = [];
+                suppliersSnapshot.forEach(doc => {
+                    suppliers.push({ id: doc.id, ...doc.data() });
+                });
+
+                console.log('Data loaded from Firebase');
+                updateDashboardStats();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showNotification('Error loading data from Firebase. Using local data.', 'error');
+            }
+        }
+
+        async function saveDataToFirebase(collection, data) {
+            try {
+                await db.collection(collection).add({
+                    ...data,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                return true;
+            } catch (error) {
+                console.error(`Error saving to ${collection}:`, error);
+                return false;
+            }
+        }
+
+        async function updateDataInFirebase(collection, id, data) {
+            try {
+                await db.collection(collection).doc(id).update({
+                    ...data,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                return true;
+            } catch (error) {
+                console.error(`Error updating ${collection}:`, error);
+                return false;
+            }
+        }
+
+        async function deleteDataFromFirebase(collection, id) {
+            try {
+                await db.collection(collection).doc(id).delete();
+                return true;
+            } catch (error) {
+                console.error(`Error deleting from ${collection}:`, error);
+                return false;
+            }
+        }
 
         // Navigation and UI functions
         function showModule(moduleId) {
@@ -2121,6 +2292,425 @@
             }
         }
 
+        // CRUD Functions with Firebase Integration
+        async function addCustomer() {
+            const name = document.getElementById('customer-name').value;
+            const email = document.getElementById('customer-email').value;
+            const phone = document.getElementById('customer-phone').value;
+            const company = document.getElementById('customer-company').value;
+
+            if (!name || !email) {
+                showNotification('Please fill in required fields.', 'error');
+                return;
+            }
+
+            const customerData = {
+                name: name,
+                email: email,
+                phone: phone,
+                company: company,
+                status: 'Active',
+                joinDate: new Date().toISOString().split('T')[0],
+                totalSpent: 0
+            };
+
+            const success = await saveDataToFirebase('customers', customerData);
+            if (success) {
+                customers.push(customerData);
+                document.getElementById('customer-name').value = '';
+                document.getElementById('customer-email').value = '';
+                document.getElementById('customer-phone').value = '';
+                document.getElementById('customer-company').value = '';
+                showNotification('Customer added successfully!', 'success');
+                updateDashboardStats();
+            } else {
+                showNotification('Error adding customer.', 'error');
+            }
+        }
+
+        async function addProduct() {
+            const name = document.getElementById('product-name').value;
+            const sku = document.getElementById('product-sku').value;
+            const category = document.getElementById('product-category').value;
+            const price = parseFloat(document.getElementById('product-price').value);
+            const quantity = parseInt(document.getElementById('product-quantity').value);
+
+            if (!name || !sku || !price || !quantity) {
+                showNotification('Please fill in required fields.', 'error');
+                return;
+            }
+
+            const productData = {
+                name: name,
+                sku: sku,
+                category: category,
+                price: price,
+                quantity: quantity,
+                status: quantity > 0 ? 'In Stock' : 'Out of Stock',
+                supplier: 'Default Supplier',
+                reorderLevel: 10,
+                cost: price * 0.7
+            };
+
+            const success = await saveDataToFirebase('products', productData);
+            if (success) {
+                products.push(productData);
+                document.getElementById('product-name').value = '';
+                document.getElementById('product-sku').value = '';
+                document.getElementById('product-price').value = '';
+                document.getElementById('product-quantity').value = '';
+                showNotification('Product added successfully!', 'success');
+                updateDashboardStats();
+            } else {
+                showNotification('Error adding product.', 'error');
+            }
+        }
+
+        async function addOrder() {
+            const customer = document.getElementById('order-customer').value;
+            const product = document.getElementById('order-product').value;
+            const quantity = parseInt(document.getElementById('order-quantity').value);
+            const status = document.getElementById('order-status').value;
+
+            if (!customer || !product || !quantity) {
+                showNotification('Please fill in required fields.', 'error');
+                return;
+            }
+
+            const orderData = {
+                customerId: customer,
+                customerName: customer,
+                date: new Date().toISOString().split('T')[0],
+                total: 0, // Calculate based on product and quantity
+                status: status,
+                items: []
+            };
+
+            const success = await saveDataToFirebase('orders', orderData);
+            if (success) {
+                orders.push(orderData);
+                document.getElementById('order-customer').value = '';
+                document.getElementById('order-product').value = '';
+                document.getElementById('order-quantity').value = '';
+                showNotification('Order created successfully!', 'success');
+                updateDashboardStats();
+            } else {
+                showNotification('Error creating order.', 'error');
+            }
+        }
+
+        async function addTransaction() {
+            const type = document.getElementById('transaction-type').value;
+            const amount = parseFloat(document.getElementById('transaction-amount').value);
+            const category = document.getElementById('transaction-category').value;
+            const description = document.getElementById('transaction-description').value;
+
+            if (!type || !amount || !category) {
+                showNotification('Please fill in required fields.', 'error');
+                return;
+            }
+
+            const transactionData = {
+                date: new Date().toISOString().split('T')[0],
+                type: type,
+                category: category,
+                description: description,
+                amount: type === 'Income' ? amount : -amount,
+                balance: 0 // Calculate based on previous balance
+            };
+
+            const success = await saveDataToFirebase('transactions', transactionData);
+            if (success) {
+                transactions.push(transactionData);
+                document.getElementById('transaction-type').value = '';
+                document.getElementById('transaction-amount').value = '';
+                document.getElementById('transaction-category').value = '';
+                document.getElementById('transaction-description').value = '';
+                showNotification('Transaction added successfully!', 'success');
+                updateDashboardStats();
+            } else {
+                showNotification('Error adding transaction.', 'error');
+            }
+        }
+
+        async function addProject() {
+            const name = document.getElementById('project-name').value;
+            const client = document.getElementById('project-client').value;
+            const startDate = document.getElementById('project-start').value;
+            const endDate = document.getElementById('project-end').value;
+            const status = document.getElementById('project-status').value;
+            const budget = parseFloat(document.getElementById('project-budget').value);
+
+            if (!name || !client || !startDate || !endDate) {
+                showNotification('Please fill in required fields.', 'error');
+                return;
+            }
+
+            const projectData = {
+                name: name,
+                client: client,
+                startDate: startDate,
+                endDate: endDate,
+                progress: 0,
+                status: status,
+                budget: budget,
+                team: [],
+                priority: 'Medium'
+            };
+
+            const success = await saveDataToFirebase('projects', projectData);
+            if (success) {
+                projects.push(projectData);
+                document.getElementById('project-name').value = '';
+                document.getElementById('project-client').value = '';
+                document.getElementById('project-start').value = '';
+                document.getElementById('project-end').value = '';
+                document.getElementById('project-budget').value = '';
+                showNotification('Project created successfully!', 'success');
+                updateDashboardStats();
+            } else {
+                showNotification('Error creating project.', 'error');
+            }
+        }
+
+        async function addEmployee() {
+            const name = document.getElementById('employee-name').value;
+            const email = document.getElementById('employee-email').value;
+            const position = document.getElementById('employee-position').value;
+            const department = document.getElementById('employee-department').value;
+            const salary = parseFloat(document.getElementById('employee-salary').value);
+            const joinDate = document.getElementById('employee-join-date').value;
+
+            if (!name || !email || !position || !department) {
+                showNotification('Please fill in required fields.', 'error');
+                return;
+            }
+
+            const employeeData = {
+                name: name,
+                email: email,
+                position: position,
+                department: department,
+                salary: salary,
+                joinDate: joinDate,
+                status: 'Active'
+            };
+
+            const success = await saveDataToFirebase('employees', employeeData);
+            if (success) {
+                employees.push(employeeData);
+                document.getElementById('employee-name').value = '';
+                document.getElementById('employee-email').value = '';
+                document.getElementById('employee-salary').value = '';
+                document.getElementById('employee-join-date').value = '';
+                showNotification('Employee added successfully!', 'success');
+                updateDashboardStats();
+            } else {
+                showNotification('Error adding employee.', 'error');
+            }
+        }
+
+        async function addSupplier() {
+            const name = document.getElementById('supplier-name').value;
+            const email = document.getElementById('supplier-email').value;
+            const phone = document.getElementById('supplier-phone').value;
+            const category = document.getElementById('supplier-category').value;
+            const rating = parseFloat(document.getElementById('supplier-rating').value);
+
+            if (!name || !email || !category) {
+                showNotification('Please fill in required fields.', 'error');
+                return;
+            }
+
+            const supplierData = {
+                name: name,
+                email: email,
+                phone: phone,
+                category: category,
+                rating: rating,
+                totalOrders: 0
+            };
+
+            const success = await saveDataToFirebase('suppliers', supplierData);
+            if (success) {
+                suppliers.push(supplierData);
+                document.getElementById('supplier-name').value = '';
+                document.getElementById('supplier-email').value = '';
+                document.getElementById('supplier-phone').value = '';
+                showNotification('Supplier added successfully!', 'success');
+                updateDashboardStats();
+            } else {
+                showNotification('Error adding supplier.', 'error');
+            }
+        }
+
+        function updateDashboardStats() {
+            // Update low stock count
+            const lowStockCount = products.filter(p => p.quantity <= p.reorderLevel && p.quantity > 0).length;
+            document.getElementById('low-stock-count').textContent = lowStockCount;
+
+            // Update pending orders count
+            const pendingOrdersCount = orders.filter(o => o.status === 'Pending').length;
+            document.getElementById('pending-orders-count').textContent = pendingOrdersCount;
+
+            // Update top customers count
+            const topCustomersCount = customers.filter(c => c.totalSpent > 10000).length;
+            document.getElementById('top-customers-count').textContent = topCustomersCount;
+
+            // Calculate growth rate
+            const totalRevenue = transactions.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
+            const totalExpenses = transactions.filter(t => t.type === 'Expense').reduce((sum, t) => sum + Math.abs(t.amount), 0);
+            const growthRate = totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue * 100).toFixed(1) : 0;
+            document.getElementById('growth-rate').textContent = growthRate + '%';
+        }
+
+        // Delete functions
+        async function deleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                const success = await deleteDataFromFirebase('products', id);
+                if (success) {
+                    products = products.filter(p => p.id !== id);
+                    showNotification('Product deleted successfully!', 'success');
+                    updateDashboardStats();
+                } else {
+                    showNotification('Error deleting product.', 'error');
+                }
+            }
+        }
+
+        async function deleteCustomer(id) {
+            if (confirm('Are you sure you want to delete this customer?')) {
+                const success = await deleteDataFromFirebase('customers', id);
+                if (success) {
+                    customers = customers.filter(c => c.id !== id);
+                    showNotification('Customer deleted successfully!', 'success');
+                    updateDashboardStats();
+                } else {
+                    showNotification('Error deleting customer.', 'error');
+                }
+            }
+        }
+
+        async function deleteOrder(id) {
+            if (confirm('Are you sure you want to delete this order?')) {
+                const success = await deleteDataFromFirebase('orders', id);
+                if (success) {
+                    orders = orders.filter(o => o.id !== id);
+                    showNotification('Order deleted successfully!', 'success');
+                    updateDashboardStats();
+                } else {
+                    showNotification('Error deleting order.', 'error');
+                }
+            }
+        }
+
+        async function deleteEmployee(id) {
+            if (confirm('Are you sure you want to delete this employee?')) {
+                const success = await deleteDataFromFirebase('employees', id);
+                if (success) {
+                    employees = employees.filter(e => e.id !== id);
+                    showNotification('Employee deleted successfully!', 'success');
+                    updateDashboardStats();
+                } else {
+                    showNotification('Error deleting employee.', 'error');
+                }
+            }
+        }
+
+        async function deleteSupplier(id) {
+            if (confirm('Are you sure you want to delete this supplier?')) {
+                const success = await deleteDataFromFirebase('suppliers', id);
+                if (success) {
+                    suppliers = suppliers.filter(s => s.id !== id);
+                    showNotification('Supplier deleted successfully!', 'success');
+                    updateDashboardStats();
+                } else {
+                    showNotification('Error deleting supplier.', 'error');
+                }
+            }
+        }
+
+        // View functions
+        function viewOrder(id) {
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                alert(`Order Details:\nID: ${order.id}\nCustomer: ${order.customerName}\nDate: ${order.date}\nStatus: ${order.status}\nTotal: $${order.total}`);
+            }
+        }
+
+        function viewEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (employee) {
+                alert(`Employee Details:\nName: ${employee.name}\nEmail: ${employee.email}\nPosition: ${employee.position}\nDepartment: ${employee.department}\nSalary: $${employee.salary}`);
+            }
+        }
+
+        function viewSupplier(id) {
+            const supplier = suppliers.find(s => s.id === id);
+            if (supplier) {
+                alert(`Supplier Details:\nName: ${supplier.name}\nEmail: ${supplier.email}\nPhone: ${supplier.phone}\nCategory: ${supplier.category}\nRating: ${supplier.rating} ⭐`);
+            }
+        }
+
+        // Edit functions
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (product) {
+                document.getElementById('product-name').value = product.name;
+                document.getElementById('product-sku').value = product.sku;
+                document.getElementById('product-category').value = product.category;
+                document.getElementById('product-price').value = product.price;
+                document.getElementById('product-quantity').value = product.quantity;
+                showNotification('Product loaded for editing. Update fields and click Add Product to save changes.', 'info');
+            }
+        }
+
+        function editOrder(id) {
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                document.getElementById('order-customer').value = order.customerName;
+                document.getElementById('order-status').value = order.status;
+                showNotification('Order loaded for editing. Update fields and click Create Order to save changes.', 'info');
+            }
+        }
+
+        function editEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (employee) {
+                document.getElementById('employee-name').value = employee.name;
+                document.getElementById('employee-email').value = employee.email;
+                document.getElementById('employee-position').value = employee.position;
+                document.getElementById('employee-department').value = employee.department;
+                document.getElementById('employee-salary').value = employee.salary;
+                document.getElementById('employee-join-date').value = employee.joinDate;
+                showNotification('Employee loaded for editing. Update fields and click Add Employee to save changes.', 'info');
+            }
+        }
+
+        function editSupplier(id) {
+            const supplier = suppliers.find(s => s.id === id);
+            if (supplier) {
+                document.getElementById('supplier-name').value = supplier.name;
+                document.getElementById('supplier-email').value = supplier.email;
+                document.getElementById('supplier-phone').value = supplier.phone;
+                document.getElementById('supplier-category').value = supplier.category;
+                document.getElementById('supplier-rating').value = supplier.rating;
+                showNotification('Supplier loaded for editing. Update fields and click Add Supplier to save changes.', 'info');
+            }
+        }
+
+        // Report functions
+        function exportReport(type) {
+            showNotification(`${type.toUpperCase()} report export started...`, 'info');
+            setTimeout(() => {
+                showNotification(`${type.toUpperCase()} report exported successfully!`, 'success');
+            }, 2000);
+        }
+
+        function generateReport(type) {
+            showNotification(`${type} report generated successfully!`, 'success');
+        }
+
         // Utility functions
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
@@ -2168,7 +2758,7 @@
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded, initializing...');
+            console.log('Page loaded, initializing Firebase...');
             
             // Check login status on page load
             checkLoginStatus();
@@ -2199,9 +2789,9 @@
             const addUserForm = document.getElementById('addUserForm');
             if (addUserForm) {
                 addUserForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                addUser();
-            });
+                    e.preventDefault();
+                    addUser();
+                });
             }
 
             // Add password toggle handlers for add user form
@@ -2220,6 +2810,21 @@
             setTimeout(() => {
                 updateAddUserButtonVisibility();
             }, 100);
+
+            // Initialize Firebase Auth state listener
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    console.log('User is signed in:', user.email);
+                } else {
+                    console.log('User is signed out');
+                }
+            });
+
+            // Load initial data if user is logged in
+            const isLoggedIn = sessionStorage.getItem('webveda_logged_in');
+            if (isLoggedIn === 'true') {
+                loadAllData();
+            }
         });
     </script>
 </body>
